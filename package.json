@@ -1,0 +1,13 @@
+{
+  "name": "monitor-phi",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Portable Infinity program router and observation runtime",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
