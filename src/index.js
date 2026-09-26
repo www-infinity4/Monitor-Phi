@@ -1,6 +1,7 @@
 import { Monitor } from "./monitor.js";
 import { createObserverProgram } from "./programs/observer.js";
 import { createQuantsProgram } from "./programs/quants.js";
+import { createNewsProgram } from "./programs/news.js";
 
 export function createMonitor(options = {}) {
   const monitor = new Monitor(options);
@@ -10,7 +11,10 @@ export function createMonitor(options = {}) {
   if (options.quants && !monitor.programs.has("quants")) {
     monitor.register(createQuantsProgram(options.quants));
   }
+  if (options.news && !monitor.programs.has("news")) {
+    monitor.register(createNewsProgram(options.news));
+  }
   return monitor;
 }
 
-export { Monitor, createObserverProgram, createQuantsProgram };
+export { Monitor, createObserverProgram, createQuantsProgram, createNewsProgram };
