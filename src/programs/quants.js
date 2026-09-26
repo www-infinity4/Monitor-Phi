@@ -75,8 +75,13 @@ export function createQuantsProgram(plugin) {
           const known = plugin.graph?.findTopic?.(topic) || [];
           if (!known.length) await plugin.collect({ topic, tags:["news-seed"] });
           for (const item of plugin.newsSeeds(topic, { depth })) {
+            const q=plugin.graph?.quants?.get(item.quantId);
+            const status=lifecycleStatus(q, number(input.staleMinutes,30,1,10080));
+            const isExact=String(item.topic||"").trim().toLowerCase()===topic.toLowerCase() && Number(item.distance)===0;
+            if (status==="abandoned" && !isExact && input.includeAbandoned!==true) continue;
+            const candidate={...item,lifecycleStatus:status};
             const old = merged.get(item.quantId);
-            if (!old || item.distance < old.distance) merged.set(item.quantId, item);
+            if (!old || candidate.distance < old.distance) merged.set(item.quantId, candidate);
           }
         }
         return json({ seeds: [...merged.values()].sort((a,b) => a.distance - b.distance) });
@@ -173,6 +178,16 @@ export function createQuantsProgram(plugin) {
 function number(value, fallback, min, max) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+}
+
+function lifecycleStatus(q, staleMinutes=30) {
+  if (!q) return "active";
+  const stage=q.lifecycleStage||q.stage||"RED";
+  if (stage==="BLACK"||q.seal?.digest) return "sealed";
+  const history=Array.isArray(q.stageHistory)?q.stageHistory:[], lastAt=history.at(-1)?.at||q.catalogUpdatedAt||q.createdAt;
+  if (!lastAt) return "active";
+  const age=Date.now()-Date.parse(lastAt);
+  return Number.isFinite(age)&&age>staleMinutes*60000?"abandoned":"active";
 }
 
 function catalogScore(q, graph) {
