@@ -18,3 +18,5 @@ export function createMonitor(options = {}) {
 }
 
 export { Monitor, createObserverProgram, createQuantsProgram, createNewsProgram };
+
+export { createSearxngNewsProvider } from "./providers/searxng-news.js";
