@@ -7,11 +7,24 @@ export function createD1QuantStore(db) {
         topic TEXT NOT NULL, observed_at TEXT NOT NULL
       )`).run();
     },
-    async recordSignal({actionId,quantId,signal,topic,observedAt}) {
+    async applySignal({actionId,quant,signal,observedAt}) {
       await this.ensureSignalSchema();
-      const r=await db.prepare(`INSERT OR IGNORE INTO quant_signals(action_id,quant_id,signal,topic,observed_at)
-        VALUES(?,?,?,?,?)`).bind(actionId,quantId,signal,topic,observedAt).run();
-      return Number(r.meta?.changes||0)>0;
+      const existing=await db.prepare("SELECT data_json FROM quants WHERE id=?").bind(quant.id).first();
+      if(existing?.data_json){
+        const prior=JSON.parse(existing.data_json);
+        if((prior.lifecycleStage||prior.stage)==="BLACK"||prior.seal?.digest) throw new Error("sealed_quant_immutable");
+      }
+      const duplicate=await db.prepare("SELECT action_id FROM quant_signals WHERE action_id=?").bind(actionId).first();
+      if(duplicate) return {applied:false,quant:existing?.data_json?JSON.parse(existing.data_json):quant};
+      const statements=[
+        db.prepare(`INSERT INTO quant_signals(action_id,quant_id,signal,topic,observed_at) VALUES(?,?,?,?,?)`)
+          .bind(actionId,quant.id,signal,quant.topic,observedAt),
+        db.prepare(`INSERT INTO quants(id,topic,topic_norm,data_json,created_at)
+          VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data_json=excluded.data_json`)
+          .bind(quant.id,quant.topic,String(quant.topic||"").trim().toLowerCase(),JSON.stringify(quant),quant.createdAt)
+      ];
+      await db.batch(statements);
+      return {applied:true,quant};
     },
     async load() {
       const [q, f] = await Promise.all([
@@ -27,7 +40,7 @@ export function createD1QuantStore(db) {
       const existing=await db.prepare("SELECT data_json FROM quants WHERE id=?").bind(quant.id).first();
       if(existing?.data_json){
         const prior=JSON.parse(existing.data_json);
-        if(prior.stage==="BLACK"||prior.seal?.digest){
+        if((prior.lifecycleStage||prior.stage)==="BLACK"||prior.seal?.digest){
           if(JSON.stringify(prior)!==JSON.stringify(quant)) throw new Error("sealed_quant_immutable");
           return prior;
         }
