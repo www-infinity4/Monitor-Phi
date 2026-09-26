@@ -55,7 +55,11 @@ export function createQuantsProgram(plugin) {
         const depth = number(input.depth, 2, 0, 8);
         const merged = new Map();
         for (const seed of seeds) {
-          for (const item of plugin.newsSeeds(seed, { depth })) {
+          const topic = typeof seed === "string" ? seed.trim() : String(seed?.topic || "").trim();
+          if (!topic) continue;
+          const known = plugin.graph?.findTopic?.(topic) || [];
+          if (!known.length) await plugin.collect({ topic, tags:["news-seed"] });
+          for (const item of plugin.newsSeeds(topic, { depth })) {
             const old = merged.get(item.quantId);
             if (!old || item.distance < old.distance) merged.set(item.quantId, item);
           }
