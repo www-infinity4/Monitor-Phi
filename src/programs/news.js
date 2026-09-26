@@ -91,7 +91,8 @@ function normalizeStories(items, seeds) {
         quantId: seed.quantId,
         distance: seed.distance,
         seedTopic: seed.topic,
-        catalogQuality: seed.catalogQuality
+        catalogQuality: seed.catalogQuality,
+        lifecycleStatus: seed.lifecycleStatus||"active"
       } : null
     }];
   });
