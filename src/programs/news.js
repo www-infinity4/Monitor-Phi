@@ -1,0 +1,89 @@
+import { json } from "../monitor.js";
+
+export function createNewsProgram({ provider, maxSeeds = 24 } = {}) {
+  return {
+    name: "news",
+    version: "0.1.0",
+    description: "Fresh News Phi feed orchestration from chosen Quant seeds.",
+
+    async health() {
+      return { ok: true, provider: provider ? "configured" : "not-configured" };
+    },
+
+    async handle(request, context) {
+      if (request.method !== "POST" || context.route !== "/feed") {
+        return json({ error: "news_route_not_found" }, 404);
+      }
+
+      const input = await readBody(request);
+      const chosen = unique(input.seeds || input.topics || []).slice(0, maxSeeds);
+      if (!chosen.length) return json({ error: "news_seeds_required" }, 400);
+
+      const quants = context.monitor.programs.get("quants");
+      if (!quants) return json({ error: "quants_program_required" }, 503);
+
+      const expanded = await expandThroughMonitor(context.monitor, chosen, input.depth);
+      const rankedSeeds = expanded.seeds.slice(0, maxSeeds);
+
+      if (!provider) {
+        return json({
+          status: "seeds-ready",
+          seeds: rankedSeeds,
+          stories: [],
+          note: "Attach a fresh-news provider to retrieve current stories."
+        });
+      }
+
+      const raw = await provider({ seeds: rankedSeeds, request, context });
+      const stories = normalizeStories(raw, rankedSeeds);
+      return json({
+        status: "fresh",
+        seeds: rankedSeeds,
+        stories,
+        generatedAt: new Date().toISOString()
+      });
+    }
+  };
+}
+
+async function expandThroughMonitor(monitor, seeds, depth = 2) {
+  const request = new Request("https://monitor.internal/p/quants/news-seeds", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ seeds, depth })
+  });
+  const response = await monitor.fetch(request, { internal: true });
+  if (!response.ok) throw new Error("Quant seed expansion failed");
+  return response.json();
+}
+
+function normalizeStories(items, seeds) {
+  const allowed = new Map(seeds.map(s => [String(s.topic || "").toLowerCase(), s]));
+  const seen = new Set();
+  return (Array.isArray(items) ? items : []).flatMap(item => {
+    const title = clean(item.title);
+    const url = clean(item.url);
+    if (!title || !url || seen.has(url)) return [];
+    seen.add(url);
+    const topic = clean(item.topic);
+    const seed = allowed.get(topic.toLowerCase());
+    return [{
+      title,
+      url,
+      excerpt: clean(item.excerpt || item.description),
+      image: clean(item.image),
+      source: clean(item.source || item.provider),
+      publishedAt: clean(item.publishedAt),
+      topic: topic || seed?.topic || "",
+      why: seed ? {
+        quantId: seed.quantId,
+        distance: seed.distance,
+        seedTopic: seed.topic
+      } : null
+    }];
+  });
+}
+
+const clean = value => String(value ?? "").replace(/\s+/g, " ").trim();
+const unique = values => [...new Set((Array.isArray(values) ? values : [values]).map(clean).filter(Boolean))];
+async function readBody(request) { try { return await request.json(); } catch { return {}; } }
