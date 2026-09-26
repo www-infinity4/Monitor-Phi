@@ -128,3 +128,7 @@ When `createMonitor({ quants: plugin })` receives a compatible Quants plugin, th
 - `GET /p/quants/export` — portable graph export.
 
 This keeps the deployment boundary clean: Quants defines the graph; Monitor runs it; a gateway only forwards HTTP.
+
+### Lifecycle analytics
+
+`GET /p/quants/lifecycle?staleMinutes=30` derives `active`, `abandoned`, and `sealed` status without adding a fifth lifecycle color or mutating a Quant. BLACK/sealed records remain authoritative completions; stale RED/BLUE/YELLOW records are reported as abandoned only at the analytics layer.
