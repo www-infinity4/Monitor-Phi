@@ -17,11 +17,21 @@ function getRuntime(env = {}) {
   return runtime;
 }
 
+const cors = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET,POST,OPTIONS",
+  "access-control-allow-headers": "content-type"
+};
+
 export default {
-  fetch(request, env, executionCtx) {
-    return getRuntime(env).fetch(request, {
+  async fetch(request, env, executionCtx) {
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    const response = await getRuntime(env).fetch(request, {
       env,
       waitUntil: executionCtx?.waitUntil?.bind(executionCtx)
     });
+    const headers = new Headers(response.headers);
+    for (const [key, value] of Object.entries(cors)) headers.set(key, value);
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   }
 };
