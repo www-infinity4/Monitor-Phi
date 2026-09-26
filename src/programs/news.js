@@ -23,7 +23,7 @@ export function createNewsProgram({ provider, maxSeeds = 24 } = {}) {
       if (!quants) return json({ error: "quants_program_required" }, 503);
 
       const expanded = await expandThroughMonitor(context.monitor, chosen, input.depth);
-      const rankedSeeds = expanded.seeds.slice(0, maxSeeds);
+      const rankedSeeds = rankExpandedSeeds(expanded.seeds, quants, chosen).slice(0, maxSeeds);
 
       if (!provider) {
         return json({
@@ -57,6 +57,18 @@ async function expandThroughMonitor(monitor, seeds, depth = 2) {
   return response.json();
 }
 
+function rankExpandedSeeds(seeds, quantsProgram, chosen){
+  const chosenOrder=new Map(chosen.map((x,i)=>[clean(x).toLowerCase(),i]));
+  const graph=quantsProgram?.plugin?.graph;
+  return [...seeds].map(seed=>{
+    const quant=graph?.quants?.get?.(seed.quantId);
+    const s=quant?.catalogSignals||{}, media=Array.isArray(quant?.media)?quant.media:[];
+    const retained=Math.max(0,(Number(s.collect)||0)-(Number(s.uncollect)||0));
+    const quality=Math.max(0,retained*5+(Number(s.useful)||0)*4+Math.min(8,media.filter(m=>m?.url&&m?.type).length*2)-(Number(s.reject)||0)*4-(Number(s.uncollect)||0)*3);
+    return {...seed,catalogQuality:quality,chosenOrder:chosenOrder.get(clean(seed.topic).toLowerCase())??999};
+  }).sort((a,b)=>(Number(a.distance)||0)-(Number(b.distance)||0)||a.chosenOrder-b.chosenOrder||b.catalogQuality-a.catalogQuality||clean(a.topic).localeCompare(clean(b.topic)));
+}
+
 function normalizeStories(items, seeds) {
   const allowed = new Map(seeds.map(s => [String(s.topic || "").toLowerCase(), s]));
   const seen = new Set();
@@ -78,7 +90,8 @@ function normalizeStories(items, seeds) {
       why: seed ? {
         quantId: seed.quantId,
         distance: seed.distance,
-        seedTopic: seed.topic
+        seedTopic: seed.topic,
+        catalogQuality: seed.catalogQuality
       } : null
     }];
   });
