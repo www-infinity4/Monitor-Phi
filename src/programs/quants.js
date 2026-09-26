@@ -26,6 +26,7 @@ export function createQuantsProgram(plugin) {
 
   return {
     name: "quants",
+    plugin,
     version: plugin.version || "1.0.0",
     description: "Topic-first Quant graph and bit-flip routing.",
 
