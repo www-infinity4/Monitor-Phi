@@ -1,13 +1,21 @@
 import { createMonitor } from "../src/index.js";
 import { createSearxngNewsProvider } from "../src/providers/searxng-news.js";
-import { createQuantsPlugin } from "../vendor/quants.js";
+import { createQuantsPlugin, QuantGraph } from "../vendor/quants.js";
+import { createD1QuantStore, withQuantPersistence } from "../src/storage/d1-quants.js";
 
 let runtime;
 
-function getRuntime(env = {}) {
+async function getRuntime(env = {}) {
   if (runtime) return runtime;
 
-  const quants = createQuantsPlugin();
+  let quants;
+  if (env.MONITOR_DB) {
+    const store = createD1QuantStore(env.MONITOR_DB);
+    const snapshot = await store.load();
+    quants = withQuantPersistence(createQuantsPlugin(new QuantGraph(snapshot)), store);
+  } else {
+    quants = createQuantsPlugin();
+  }
   const endpoint = env.SEARXNG_URL || "https://orange-brook-a2ac.marvaseater.workers.dev";
   const news = {
     provider: createSearxngNewsProvider({ endpoint })
@@ -26,7 +34,7 @@ const cors = {
 export default {
   async fetch(request, env, executionCtx) {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-    const response = await getRuntime(env).fetch(request, {
+    const response = await (await getRuntime(env)).fetch(request, {
       env,
       waitUntil: executionCtx?.waitUntil?.bind(executionCtx)
     });
