@@ -1,6 +1,18 @@
 export function createD1QuantStore(db) {
   if (!db?.prepare) throw new TypeError("D1 database binding is required");
   return {
+    async ensureSignalSchema() {
+      await db.prepare(`CREATE TABLE IF NOT EXISTS quant_signals (
+        action_id TEXT PRIMARY KEY, quant_id TEXT NOT NULL, signal TEXT NOT NULL,
+        topic TEXT NOT NULL, observed_at TEXT NOT NULL
+      )`).run();
+    },
+    async recordSignal({actionId,quantId,signal,topic,observedAt}) {
+      await this.ensureSignalSchema();
+      const r=await db.prepare(`INSERT OR IGNORE INTO quant_signals(action_id,quant_id,signal,topic,observed_at)
+        VALUES(?,?,?,?,?)`).bind(actionId,quantId,signal,topic,observedAt).run();
+      return Number(r.meta?.changes||0)>0;
+    },
     async load() {
       const [q, f] = await Promise.all([
         db.prepare("SELECT data_json FROM quants ORDER BY created_at").all(),
