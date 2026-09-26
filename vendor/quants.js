@@ -26,7 +26,8 @@ export async function createQuant(input={}) {
   const key = JSON.stringify({topic:norm(topic), refinements:refinements.map(norm), media});
   return {
     schema:"quant/v1", id:"q_"+(await hash(key)).slice(0,24), topic,
-    scope:clean(input.scope || topic), stage:QUDIT_STAGES.RED,
+    scope:clean(input.scope || topic), scopeField:"RED", lifecycleStage:QUDIT_STAGES.RED, stage:QUDIT_STAGES.RED,
+    parentEnclosureId:clean(input.parentEnclosureId),
     stageHistory:[{stage:QUDIT_STAGES.RED,at:input.createdAt || new Date().toISOString()}],
     parentId:clean(input.parentId), refinements, media, tags:uniq(input.tags),
     createdAt:input.createdAt || new Date().toISOString()
@@ -41,13 +42,13 @@ export function advanceQudit(quant,nextStage,input={}) {
   const event={stage:next,at};
   if (input.destination) event.destination=clean(input.destination);
   if (input.action) event.action=clean(input.action);
-  return {...quant,stage:next,stageHistory:[...(quant.stageHistory||[]),event]};
+  return {...quant,lifecycleStage:next,stage:next,stageHistory:[...(quant.stageHistory||[]),event]};
 }
 
 export function shadeQudit(quant,shader={}) {
   if (!quant?.id) throw new Error("quant is required");
   return {schema:"qudit-shader/v1",quantId:quant.id,scope:quant.scope||quant.topic,
-    stage:quant.stage||QUDIT_STAGES.RED,shader:{name:clean(shader.name||"white"),view:clean(shader.view||"default")}};
+    stage:quant.lifecycleStage||quant.stage||QUDIT_STAGES.RED,scopeField:quant.scopeField||"RED",shader:{name:clean(shader.name||"white"),view:clean(shader.view||"default")}};
 }
 
 export async function createBitFlip(from, to, input={}) {
