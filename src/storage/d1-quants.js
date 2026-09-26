@@ -12,6 +12,14 @@ export function createD1QuantStore(db) {
       };
     },
     async saveQuant(quant) {
+      const existing=await db.prepare("SELECT data_json FROM quants WHERE id=?").bind(quant.id).first();
+      if(existing?.data_json){
+        const prior=JSON.parse(existing.data_json);
+        if(prior.stage==="BLACK"||prior.seal?.digest){
+          if(JSON.stringify(prior)!==JSON.stringify(quant)) throw new Error("sealed_quant_immutable");
+          return prior;
+        }
+      }
       await db.prepare(`INSERT INTO quants(id,topic,topic_norm,data_json,created_at)
         VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data_json=excluded.data_json`)
         .bind(quant.id, quant.topic, String(quant.topic||"").trim().toLowerCase(), JSON.stringify(quant), quant.createdAt).run();
