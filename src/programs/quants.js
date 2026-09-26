@@ -134,15 +134,14 @@ export function createQuantsProgram(plugin) {
         const actionId=String(input.actionId||"").trim();
         if (!actionId) return json({ error:"action_id_required" },400);
         const observedAt=new Date().toISOString();
-        if (plugin.store?.recordSignal) {
-          const inserted=await plugin.store.recordSignal({actionId,quantId:quant.id,signal,topic:quant.topic,observedAt});
-          if (!inserted) return json({ quantId:quant.id, topic:quant.topic, signals:quant.catalogSignals||{}, duplicate:true });
-        }
-        quant.catalogSignals = quant.catalogSignals || { collect:0, uncollect:0, useful:0, reject:0 };
-        quant.catalogSignals[signal] = (Number(quant.catalogSignals[signal]) || 0) + 1;
-        quant.catalogUpdatedAt = observedAt;
-        if (plugin.store?.saveQuant) await plugin.store.saveQuant(quant);
-        return json({ quantId:quant.id, topic:quant.topic, signals:quant.catalogSignals, duplicate:false });
+        const updated={...quant,catalogSignals:{...(quant.catalogSignals||{collect:0,uncollect:0,useful:0,reject:0})},catalogUpdatedAt:observedAt};
+        updated.catalogSignals[signal]=(Number(updated.catalogSignals[signal])||0)+1;
+        if (plugin.store?.applySignal) {
+          const result=await plugin.store.applySignal({actionId,quant:updated,signal,observedAt});
+          if (!result.applied) return json({quantId:quant.id,topic:quant.topic,signals:result.quant.catalogSignals||{},duplicate:true});
+        } else if (plugin.store?.saveQuant) await plugin.store.saveQuant(updated);
+        plugin.graph.quants.set(updated.id,updated);
+        return json({ quantId:updated.id, topic:updated.topic, signals:updated.catalogSignals, duplicate:false });
       }
 
       if (request.method === "GET" && route === "/lifecycle") {
