@@ -31,6 +31,7 @@ export function withQuantPersistence(plugin, store) {
   const flip = plugin.flip.bind(plugin);
   return {
     ...plugin,
+    store,
     async collect(input) {
       const quant = await collect(input);
       await store.saveQuant(quant);
