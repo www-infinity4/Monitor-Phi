@@ -1,2 +1,2 @@
 # Monitor-Phi
-Monitor activity of any infinity website. AI oversight, Bots, Script Maintainance &amp; observation studio
+Monitor activity of any Infinity website, including Cloudflare-protected properties. AI oversight, bots, script maintenance, and observation studio.
