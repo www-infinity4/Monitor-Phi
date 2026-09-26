@@ -1,4 +1,6 @@
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
+export const QUDIT_STAGES = Object.freeze({ RED:"RED", BLUE:"BLUE", YELLOW:"YELLOW", BLACK:"BLACK" });
+export const QUDIT_TRANSITIONS = Object.freeze({ RED:"BLUE", BLUE:"YELLOW", YELLOW:"BLACK" });
 
 const clean = v => String(v ?? "").trim();
 const norm = v => clean(v).toLocaleLowerCase().replace(/\s+/g, " ");
@@ -24,8 +26,28 @@ export async function createQuant(input={}) {
   const key = JSON.stringify({topic:norm(topic), refinements:refinements.map(norm), media});
   return {
     schema:"quant/v1", id:"q_"+(await hash(key)).slice(0,24), topic,
-    refinements, media, tags:uniq(input.tags), createdAt:input.createdAt || new Date().toISOString()
+    scope:clean(input.scope || topic), stage:QUDIT_STAGES.RED,
+    stageHistory:[{stage:QUDIT_STAGES.RED,at:input.createdAt || new Date().toISOString()}],
+    parentId:clean(input.parentId), refinements, media, tags:uniq(input.tags),
+    createdAt:input.createdAt || new Date().toISOString()
   };
+}
+
+export function advanceQudit(quant,nextStage,input={}) {
+  if (!quant?.id) throw new Error("quant is required");
+  const current=quant.stage || QUDIT_STAGES.RED, next=clean(nextStage).toUpperCase();
+  if (QUDIT_TRANSITIONS[current]!==next) throw new Error(`invalid qudit transition: ${current} -> ${next}`);
+  const at=input.at || new Date().toISOString();
+  const event={stage:next,at};
+  if (input.destination) event.destination=clean(input.destination);
+  if (input.action) event.action=clean(input.action);
+  return {...quant,stage:next,stageHistory:[...(quant.stageHistory||[]),event]};
+}
+
+export function shadeQudit(quant,shader={}) {
+  if (!quant?.id) throw new Error("quant is required");
+  return {schema:"qudit-shader/v1",quantId:quant.id,scope:quant.scope||quant.topic,
+    stage:quant.stage||QUDIT_STAGES.RED,shader:{name:clean(shader.name||"white"),view:clean(shader.view||"default")}};
 }
 
 export async function createBitFlip(from, to, input={}) {
@@ -73,6 +95,8 @@ export function createQuantsPlugin(graph=new QuantGraph()){
     version:VERSION, graph,
     async collect(input){ const q=await createQuant(input); return graph.addQuant(q); },
     async flip(from,to,input){ const f=await createBitFlip(from,to,input); return graph.addFlip(f); },
+    advance(quant,nextStage,input){ const q=advanceQudit(quant,nextStage,input); return graph.addQuant(q); },
+    shade:(quant,shader)=>shadeQudit(quant,shader),
     expand:(seed,opts)=>graph.expand(seed,opts),
     newsSeeds:(seed,opts)=>graph.newsSeeds(seed,opts),
     export:()=>graph.toJSON()
