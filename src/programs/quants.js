@@ -126,11 +126,18 @@ export function createQuantsProgram(plugin) {
           return json({ error: "topic_and_valid_signal_required" }, 400);
         }
         const quant = plugin.graph?.findTopic(topic)?.[0] || await plugin.collect({ topic, tags:["catalog-signal"] });
+        const actionId=String(input.actionId||"").trim();
+        if (!actionId) return json({ error:"action_id_required" },400);
+        const observedAt=new Date().toISOString();
+        if (plugin.store?.recordSignal) {
+          const inserted=await plugin.store.recordSignal({actionId,quantId:quant.id,signal,topic:quant.topic,observedAt});
+          if (!inserted) return json({ quantId:quant.id, topic:quant.topic, signals:quant.catalogSignals||{}, duplicate:true });
+        }
         quant.catalogSignals = quant.catalogSignals || { collect:0, uncollect:0, useful:0, reject:0 };
         quant.catalogSignals[signal] = (Number(quant.catalogSignals[signal]) || 0) + 1;
-        quant.catalogUpdatedAt = new Date().toISOString();
+        quant.catalogUpdatedAt = observedAt;
         if (plugin.store?.saveQuant) await plugin.store.saveQuant(quant);
-        return json({ quantId:quant.id, topic:quant.topic, signals:quant.catalogSignals });
+        return json({ quantId:quant.id, topic:quant.topic, signals:quant.catalogSignals, duplicate:false });
       }
 
       if (request.method === "GET" && route === "/catalog") {
