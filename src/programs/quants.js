@@ -140,6 +140,21 @@ export function createQuantsProgram(plugin) {
         return json({ quantId:quant.id, topic:quant.topic, signals:quant.catalogSignals, duplicate:false });
       }
 
+      if (request.method === "GET" && route === "/lifecycle") {
+        const threshold=number(url.searchParams.get("staleMinutes"),30,1,10080)*60000, now=Date.now();
+        const items=[...(plugin.graph?.quants?.values?.()||[])].map(q=>{
+          const stage=q.lifecycleStage||q.stage||"RED", history=Array.isArray(q.stageHistory)?q.stageHistory:[],
+            lastAt=history.at(-1)?.at||q.catalogUpdatedAt||q.createdAt||null,
+            ageMs=lastAt?Math.max(0,now-Date.parse(lastAt)):null;
+          const status=(stage==="BLACK"||q.seal?.digest)?"sealed":(ageMs!==null&&ageMs>threshold)?"abandoned":"active";
+          return {quantId:q.id,topic:q.topic,scope:q.scope||q.topic,scopeField:q.scopeField||"RED",
+            parentEnclosureId:q.parentEnclosureId||"",lifecycleStage:stage,status,lastAt,ageMs,
+            sealDigest:q.seal?.digest||null};
+        });
+        const counts=items.reduce((a,x)=>(a[x.status]++,a),{active:0,abandoned:0,sealed:0});
+        return json({staleMinutes:threshold/60000,counts,items});
+      }
+
       if (request.method === "GET" && route === "/catalog") {
         const ranked = [...(plugin.graph?.quants?.values?.() || [])].map(q => catalogScore(q, plugin.graph))
           .sort((a,b) => b.score-a.score || a.topic.localeCompare(b.topic));
