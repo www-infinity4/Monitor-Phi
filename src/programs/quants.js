@@ -106,6 +106,10 @@ function catalogScore(q, graph) {
   const richness=Math.min(12, verifiedMedia*2 + Math.min(4,refinements.length) + Math.min(3,tags.length));
   const relationship=Math.min(10,edges.reduce((n,e)=>n+Math.max(0,Number(e.weight)||1),0));
   const rejection=(Number(s.uncollect)||0)*3+(Number(s.reject)||0)*4;
-  const score=Math.max(0, retained*5+(Number(s.useful)||0)*4+richness+relationship-rejection);
-  return {quantId:q.id,topic:q.topic,score,signals:s,metrics:{retained,verifiedMedia,richness,relationship,rejection}};
+  const evidence=Array.isArray(q.evidence)?q.evidence:[], claims=Array.isArray(q.claims)?q.claims:[];
+  const supported=claims.filter(x=>x&&x.status==='supported').length, disputed=claims.filter(x=>x&&x.status==='disputed').length;
+  const evidenceQuality=Math.min(12,evidence.reduce((n,e)=>n+(e?.quality==='primary'?3:e?.quality==='reliable'?2:e?.url?1:0),0));
+  const claimConfidence=Math.max(-12,Math.min(12,supported*2-disputed*3));
+  const score=Math.max(0, retained*5+(Number(s.useful)||0)*4+richness+relationship+evidenceQuality+claimConfidence-rejection);
+  return {quantId:q.id,topic:q.topic,score,signals:s,metrics:{retained,verifiedMedia,richness,relationship,evidenceQuality,claimConfidence,rejection}};
 }
