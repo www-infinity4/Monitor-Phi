@@ -113,3 +113,18 @@ A program only needs a name and a `handle(request, context)` function. This mean
 - `/p/<name>/*` — dispatch to any registered Monitor program.
 
 The Cloudflare adapter is transitional. Monitor's core imports no Cloudflare API, so another HTTP host can call the same `monitor.fetch(request, context)` entry point later.
+
+
+## Quants program
+
+Monitor now has a Quants program adapter. The Quant graph remains owned by the Quants package; Monitor supplies routing and hosting.
+
+When `createMonitor({ quants: plugin })` receives a compatible Quants plugin, these routes are registered:
+
+- `POST /p/quants/collect` — create/collect a Quant.
+- `POST /p/quants/flip` — record a relationship/bit flip.
+- `GET /p/quants/expand?seed=...&depth=2` — traverse related Quants.
+- `POST /p/quants/news-seeds` — merge one or more chosen topics into ranked News Phi seeds.
+- `GET /p/quants/export` — portable graph export.
+
+This keeps the deployment boundary clean: Quants defines the graph; Monitor runs it; a gateway only forwards HTTP.
