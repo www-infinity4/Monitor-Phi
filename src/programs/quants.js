@@ -67,6 +67,37 @@ export function createQuantsProgram(plugin) {
         return json({ seeds: [...merged.values()].sort((a,b) => a.distance - b.distance) });
       }
 
+      if (request.method === "POST" && route === "/advance") {
+        const input = await body(request);
+        const graph = plugin.graph;
+        const quant = graph?.quants?.get(input.quantId) || graph?.findTopic?.(input.topic)?.[0];
+        if (!quant) return json({ error: "quant_not_found" }, 404);
+        try {
+          const advanced = plugin.advance(quant, input.stage, { destination:input.destination, action:input.action });
+          if (plugin.store?.saveQuant) await plugin.store.saveQuant(advanced);
+          return json({ quant:advanced });
+        } catch (error) {
+          return json({ error:"invalid_transition", message:error.message }, 409);
+        }
+      }
+
+      if (request.method === "GET" && route === "/lineage") {
+        const id=url.searchParams.get("id");
+        if (!id) return json({ error:"id_required" },400);
+        const chain=[], seen=new Set(); let q=plugin.graph?.quants?.get(id);
+        while(q && !seen.has(q.id) && chain.length<100){
+          chain.push(q); seen.add(q.id);
+          q=q.parentId ? plugin.graph?.quants?.get(q.parentId) : null;
+        }
+        return json({ root:chain.at(-1)?.id||null, chain });
+      }
+
+      if (request.method === "GET" && route === "/shade") {
+        const id=url.searchParams.get("id"), quant=plugin.graph?.quants?.get(id);
+        if (!quant) return json({ error:"quant_not_found" },404);
+        return json(plugin.shade(quant,{name:"white",view:url.searchParams.get("view")||"default"}));
+      }
+
       if (request.method === "POST" && route === "/signal") {
         const input = await body(request);
         const topic = String(input.topic || "").trim();
