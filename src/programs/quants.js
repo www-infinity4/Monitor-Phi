@@ -14,7 +14,7 @@ async function sha256(value){
   return [...new Uint8Array(out)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 async function sealQuant(quant){
-  const payload={id:quant.id,parentId:quant.parentId||"",scope:quant.scope||quant.topic,topic:quant.topic,
+  const payload={id:quant.id,parentId:quant.parentId||"",parentEnclosureId:quant.parentEnclosureId||"",scope:quant.scope||quant.topic,scopeField:quant.scopeField||"RED",topic:quant.topic,
     refinements:quant.refinements||[],media:quant.media||[],stageHistory:quant.stageHistory||[],catalogSignals:quant.catalogSignals||null};
   return {...quant,seal:{algorithm:"SHA-256",digest:await sha256(canonical(payload)),sealedAt:new Date().toISOString(),schema:"qudit-seal/v1"}};
 }
@@ -87,9 +87,9 @@ export function createQuantsProgram(plugin) {
         const quant = graph?.quants?.get(input.quantId) || graph?.findTopic?.(input.topic)?.[0];
         if (!quant) return json({ error: "quant_not_found" }, 404);
         try {
-          if (quant.stage === "BLACK" || quant.seal?.digest) return json({ error:"quant_sealed", seal:quant.seal }, 409);
+          if ((quant.lifecycleStage||quant.stage) === "BLACK" || quant.seal?.digest) return json({ error:"quant_sealed", seal:quant.seal }, 409);
           let advanced = plugin.advance(quant, input.stage, { destination:input.destination, action:input.action });
-          if (advanced.stage === "BLACK") {
+          if ((advanced.lifecycleStage||advanced.stage) === "BLACK") {
             advanced = await sealQuant(advanced);
             plugin.graph.quants.set(advanced.id, advanced);
           }
