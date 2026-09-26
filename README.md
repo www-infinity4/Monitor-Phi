@@ -87,3 +87,29 @@ Monitor Phi should be observable, reproducible and portable. A replacement for v
 ## Status
 
 Architecture repository. Cloudflare remains required wherever an existing Infinity application still depends on Cloudflare services until the corresponding Monitor Phi component has been implemented, tested and migrated.
+
+
+## Implemented foundation
+
+Monitor Phi now includes the first portable runtime:
+
+- `src/monitor.js` — program registry, `/health`, `/programs`, and `/p/:program/*` routing.
+- `src/programs/observer.js` — Observer as a Monitor program with bounded read-only checks.
+- `src/index.js` — runtime factory.
+- `adapters/cloudflare-worker.js` — intentionally thin Cloudflare gateway adapter.
+- `test/monitor.test.js` — routing and health tests.
+
+The boundary is now concrete:
+
+`Internet -> gateway adapter -> Monitor -> registered program`
+
+A program only needs a name and a `handle(request, context)` function. This means future News, Quants, wallet, scheduler and repair programs can live behind one Monitor router instead of each requiring a separate Cloudflare Worker.
+
+### Routes
+
+- `GET /health` — aggregate program health.
+- `GET /programs` — registered programs.
+- `/p/observer/` — run Observer checks.
+- `/p/<name>/*` — dispatch to any registered Monitor program.
+
+The Cloudflare adapter is transitional. Monitor's core imports no Cloudflare API, so another HTTP host can call the same `monitor.fetch(request, context)` entry point later.
