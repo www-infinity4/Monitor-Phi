@@ -2,6 +2,7 @@ import { Monitor } from "./monitor.js";
 import { createObserverProgram } from "./programs/observer.js";
 import { createQuantsProgram } from "./programs/quants.js";
 import { createNewsProgram } from "./programs/news.js";
+import { createFlowProgram } from "./programs/flow.js";
 
 export function createMonitor(options = {}) {
   const monitor = new Monitor(options);
@@ -14,9 +15,12 @@ export function createMonitor(options = {}) {
   if (options.news && !monitor.programs.has("news")) {
     monitor.register(createNewsProgram(options.news));
   }
+  if (options.flow && !monitor.programs.has("flow")) {
+    monitor.register(createFlowProgram(options.flow));
+  }
   return monitor;
 }
 
-export { Monitor, createObserverProgram, createQuantsProgram, createNewsProgram };
+export { Monitor, createObserverProgram, createQuantsProgram, createNewsProgram, createFlowProgram };
 
 export { createSearxngNewsProvider } from "./providers/searxng-news.js";
