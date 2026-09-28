@@ -2,6 +2,7 @@ import { createMonitor } from "../src/index.js";
 import { createSearxngNewsProvider } from "../src/providers/searxng-news.js";
 import { createQuantsPlugin, QuantGraph } from "../vendor/quants.js";
 import { createD1QuantStore, withQuantPersistence } from "../src/storage/d1-quants.js";
+import { createD1FlowStore } from "../src/storage/d1-flow.js";
 
 let runtime;
 
@@ -21,7 +22,8 @@ async function getRuntime(env = {}) {
     provider: createSearxngNewsProvider({ endpoint })
   };
 
-  runtime = createMonitor({ quants, news });
+  const flow = env.MONITOR_DB ? { store: createD1FlowStore(env.MONITOR_DB) } : null;
+  runtime = createMonitor({ quants, news, flow });
   return runtime;
 }
 
