@@ -16,11 +16,24 @@ export function createNewsProgram({ provider, maxSeeds = 24 } = {}) {
       }
 
       const input = await readBody(request);
-      const chosen = unique(input.seeds || input.topics || []).slice(0, maxSeeds);
-      if (!chosen.length) return json({ error: "news_seeds_required" }, 400);
-
       const quants = context.monitor.programs.get("quants");
       if (!quants) return json({ error: "quants_program_required" }, 503);
+
+      let chosen = unique(input.seeds || input.topics || []).slice(0, maxSeeds);
+      if (!chosen.length) {
+        const graph = quants.plugin?.graph;
+        chosen = [...(graph?.quants?.values?.() || [])]
+          .filter(q => clean(q?.topic))
+          .sort((a,b) => {
+            const as=a?.catalogSignals||{}, bs=b?.catalogSignals||{};
+            const score=x=>Math.max(0,(Number(x.collect)||0)-(Number(x.uncollect)||0))*5+(Number(x.useful)||0)*4-(Number(x.reject)||0)*4;
+            return score(bs)-score(as) || String(b?.catalogUpdatedAt||b?.createdAt||'').localeCompare(String(a?.catalogUpdatedAt||a?.createdAt||''));
+          })
+          .map(q => clean(q.topic))
+          .filter(Boolean)
+          .slice(0, maxSeeds);
+      }
+      if (!chosen.length) return json({ status:"empty", seeds:[], stories:[], generatedAt:new Date().toISOString() });
 
       const expanded = await expandThroughMonitor(context.monitor, chosen, input.depth);
       const rankedSeeds = rankExpandedSeeds(expanded.seeds, quants, chosen).slice(0, maxSeeds);
