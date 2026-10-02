@@ -4,6 +4,7 @@ import { createQuantsPlugin, QuantGraph } from "../vendor/quants.js";
 import { createD1QuantStore, withQuantPersistence } from "../src/storage/d1-quants.js";
 import { createD1FlowStore } from "../src/storage/d1-flow.js";
 import { createWalletContractChecks } from "../src/checks/wallet-contracts.js";
+import { createMediaChecks } from "../src/checks/media.js";
 
 let runtime;
 
@@ -24,7 +25,7 @@ async function getRuntime(env = {}) {
   };
 
   const flow = env.MONITOR_DB ? { store: createD1FlowStore(env.MONITOR_DB) } : null;
-  runtime = createMonitor({ quants, news, flow, checks: createWalletContractChecks() });
+  runtime = createMonitor({ quants, news, flow, checks: [...createWalletContractChecks(), ...createMediaChecks()] });
   return runtime;
 }
 
