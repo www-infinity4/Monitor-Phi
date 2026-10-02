@@ -12,12 +12,21 @@ const DEFAULT_WALLET_SURFACES = [
     ]
   },
   {
-    name: "infinity-starcoin-menu-contract",
+    name: "infinity-starcoin-loader-contract",
     url: "https://www-infinity4.github.io/C13b0/",
+    required: [
+      "infinity-starcoin-contract.js"
+    ]
+  },
+  {
+    name: "infinity-starcoin-menu-contract",
+    url: "https://www-infinity4.github.io/C13b0/infinity-starcoin-contract.js",
     required: [
       "Star Coin wallet",
       "Unified wallet",
-      "Open token workspace"
+      "Open token workspace",
+      "starquest_guest_profile_v1",
+      "InfinityStarCoinContract"
     ]
   },
   {
