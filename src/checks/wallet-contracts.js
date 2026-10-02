@@ -12,6 +12,26 @@ const DEFAULT_WALLET_SURFACES = [
     ]
   },
   {
+    name: "infinity-starcoin-menu-contract",
+    url: "https://www-infinity4.github.io/C13b0/",
+    required: [
+      "Star Coin wallet",
+      "Unified wallet",
+      "Open token workspace"
+    ]
+  },
+  {
+    name: "omni-starcoin-runtime-contract",
+    url: "https://www-infinity4.github.io/Omni-Phi/assets/app.js",
+    required: [
+      "awardStarCoinCredit",
+      "awardStarCoinShare",
+      "starquest_guest_profile_v1",
+      "Star Coin wallet",
+      "data-show-star-wallet"
+    ]
+  },
+  {
     name: "infinity-token-count-contract",
     url: "https://www-infinity4.github.io/C13b0/unified-token-count.js",
     required: [
