@@ -1,5 +1,5 @@
 const SURFACES = [
-  ["QuantaPhi/media-repair.js", ["QuantaMediaRepair","qImagesBtn","qVideoBtn","qSoundBtn"]],
+  ["QuantaPhi/media-repair.js", ["QuantaMediaRepair","qImagesBtn","qVideoBtn","qSoundBtn","quanta-overview-first-v1"]],
   ["Omni-Phi/images/", ["image-search-v4.js"]],
   ["Omni-Phi/video/", ["assets/app.js"]],
   ["Omni-Phi/audio/", ["assets/app.js"]],
