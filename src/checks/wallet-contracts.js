@@ -41,6 +41,16 @@ const DEFAULT_WALLET_SURFACES = [
     ]
   },
   {
+    name: "omni-image-starcoin-contract",
+    url: "https://www-infinity4.github.io/Omni-Phi/assets/image-search-v4.js",
+    required: [
+      "awardStarCoinCredit",
+      "omni-image:",
+      "progressToNextCoin",
+      "omniphi:image-selected"
+    ]
+  },
+  {
     name: "infinity-token-count-contract",
     url: "https://www-infinity4.github.io/C13b0/unified-token-count.js",
     required: [
