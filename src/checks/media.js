@@ -6,7 +6,8 @@ const SURFACES = [
   ["Omni-Phi/audio/", ["assets/app.js"]],
   ["C13b0/phi/images/", ["Infinity"]],
   ["C13b0/phi/video/", ["Infinity"]],
-  ["C13b0/phi/sound/", ["Infinity"]]
+  ["C13b0/phi/sound/", ["Infinity"]],
+  ["https://infinity-rogers.marvaseater.workers.dev/health", ["infinity-ai-gateway","\"openaiConfigured\":true","\"workersAIConfigured\":true"]]
 ];
 
 export function createMediaChecks({ fetchImpl = globalThis.fetch, base = "https://www-infinity4.github.io/", timeoutMs = 8000 } = {}) {
@@ -16,7 +17,8 @@ export function createMediaChecks({ fetchImpl = globalThis.fetch, base = "https:
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const response = await fetchImpl(new URL(path, base), { cache: "no-store", signal: controller.signal });
+        const target = /^https?:\/\//i.test(path) ? path : new URL(path, base);
+        const response = await fetchImpl(target, { cache: "no-store", signal: controller.signal });
         const body = await response.text();
         const missing = required.filter(marker => !body.includes(marker));
         return { ok: response.ok && missing.length === 0, status: response.status, path, missing };
