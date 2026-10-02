@@ -1,6 +1,12 @@
 name: Wallet contract watch
 
 on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/checks/wallet-contracts.js"
+      - "scripts/check-wallet-contracts.js"
+      - ".github/workflows/wallet-contract-watch.yml"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
