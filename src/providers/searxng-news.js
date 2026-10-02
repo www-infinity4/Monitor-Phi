@@ -11,10 +11,13 @@ export function createSearxngNewsProvider({ endpoint, fetchImpl = fetch, perSeed
       const params = new URLSearchParams({
         q: query,
         format: "json",
-        categories: "news"
+        categories: "news",
+        time_range: "week",
+        _newsphi: String(Date.now())
       });
       const response = await fetchImpl(`${base}/search?${params}`, {
-        headers: { accept: "application/json" }
+        cache: "no-store",
+        headers: { accept: "application/json", "cache-control": "no-cache" }
       });
       if (!response.ok) return [];
       const data = await response.json();
