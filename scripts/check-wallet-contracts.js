@@ -1,6 +1,7 @@
 import { createWalletContractChecks } from "../src/checks/wallet-contracts.js";
+import { createMediaChecks } from "../src/checks/media.js";
 
-const checks = createWalletContractChecks();
+const checks = [...createWalletContractChecks(), ...createMediaChecks()];
 const results = [];
 for (const check of checks) {
   const result = await check.run({});
@@ -15,6 +16,6 @@ console.log(JSON.stringify({
 
 const failed = results.filter(result => result.ok === false);
 if (failed.length) {
-  console.error("Required wallet contracts failed:", failed.map(result => result.name).join(", "));
+  console.error("Required site contracts failed:", failed.map(result => result.name).join(", "));
   process.exitCode = 1;
 }
