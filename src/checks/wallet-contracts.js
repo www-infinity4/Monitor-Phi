@@ -1,6 +1,7 @@
 const DEFAULT_WALLET_SURFACES = [
   {
     name: "quantaphi-wallet-contract",
+    forbidden: ["function prebuild(id,q){/*"],
     url: "https://www-infinity4.github.io/QuantaPhi/",
     required: [
       "QuantaPhiWallet",
@@ -9,7 +10,11 @@ const DEFAULT_WALLET_SURFACES = [
       "starquest_guest_profile_v1",
       "controlPhiWalletButton",
       "unified-token-count.js",
-      "infinity:token-count-updated"
+      "infinity:token-count-updated",
+      "search-wallet-sync.js",
+      "QuantaInfinityCredit",
+      "frame.dataset.quantaWebsiteBuild",
+      "search({refine:true})"
     ]
   },
   {
@@ -68,7 +73,9 @@ const DEFAULT_WALLET_SURFACES = [
     required: [
       "unified-token-count.js",
       "assets/app.js",
-      "wallet-runtime.js"
+      "wallet-runtime.js",
+      "phi-quant-sync.js",
+      "cloud-wallet-client.js"
     ]
   },
   {
@@ -112,7 +119,8 @@ export function createWalletContractChecks({
         });
         const text = await response.text();
         const missing = surface.required.filter(marker => !text.includes(marker));
-        const ok = response.ok && missing.length === 0;
+        const forbidden = (surface.forbidden || []).filter(marker => text.includes(marker));
+        const ok = response.ok && missing.length === 0 && forbidden.length === 0;
         return {
           ok: surface.optional ? true : ok,
           contractOk: ok,
@@ -120,6 +128,7 @@ export function createWalletContractChecks({
           url: surface.url,
           status: response.status,
           missing,
+          forbidden,
           required: surface.required,
           remediation: ok
             ? "none"
