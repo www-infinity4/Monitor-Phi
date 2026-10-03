@@ -8,7 +8,8 @@ const DEFAULT_WALLET_SURFACES = [
       "addShare",
       "starquest_guest_profile_v1",
       "controlPhiWalletButton",
-      "unified-token-count.js"
+      "unified-token-count.js",
+      "infinity:token-count-updated"
     ]
   },
   {
@@ -67,8 +68,18 @@ const DEFAULT_WALLET_SURFACES = [
     required: [
       "unified-token-count.js",
       "assets/app.js",
-      "control-phi.js"
+      "wallet-runtime.js"
     ]
+  },
+  {
+    name: "quantaphi-wallet-runtime-contract",
+    url: "https://www-infinity4.github.io/QuantaPhi/wallet-runtime.js",
+    required: ["refreshWalletUI", "canonicalSearchCounts", "controlPhiWalletPanel", "controlPhiWalletBound"]
+  },
+  {
+    name: "omni-phi-wallet-runtime-contract",
+    url: "https://www-infinity4.github.io/Omni-Phi/wallet-runtime.js",
+    required: ["refreshWalletUI", "canonicalSearchCounts", "controlPhiWalletPanel", "controlPhiWalletBound"]
   },
   {
     name: "control-phi-wallet-contract",
