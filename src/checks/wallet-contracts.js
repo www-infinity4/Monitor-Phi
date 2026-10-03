@@ -14,7 +14,11 @@ const DEFAULT_WALLET_SURFACES = [
       "search-wallet-sync.js",
       "QuantaInfinityCredit",
       "frame.dataset.quantaWebsiteBuild",
-      "search({refine:true})"
+      "search({refine:true})",
+      "qinfinity",
+      "asset-balances.js",
+      "music-quant-store.js",
+      "music-quant-cloud.js"
     ]
   },
   {
@@ -87,6 +91,21 @@ const DEFAULT_WALLET_SURFACES = [
     name: "omni-phi-wallet-runtime-contract",
     url: "https://www-infinity4.github.io/Omni-Phi/wallet-runtime.js",
     required: ["refreshWalletUI", "canonicalSearchCounts", "controlPhiWalletPanel", "controlPhiWalletBound"]
+  },
+  {
+    name: "quantaphi-independent-asset-contract",
+    url: "https://www-infinity4.github.io/QuantaPhi/asset-balances.js",
+    required: ["phi:assetBalances:v1", "INFINITY", "QUANT", "MUSIC_QUANT", "epoch!==a.epoch", "pending"]
+  },
+  {
+    name: "omni-phi-independent-asset-contract",
+    url: "https://www-infinity4.github.io/Omni-Phi/asset-balances.js",
+    required: ["phi:assetBalances:v1", "INFINITY", "QUANT", "MUSIC_QUANT", "epoch!==a.epoch", "pending"]
+  },
+  {
+    name: "c13b0-independent-asset-contract",
+    url: "https://www-infinity4.github.io/C13b0/asset-balances.js",
+    required: ["phi:assetBalances:v1", "INFINITY", "QUANT", "MUSIC_QUANT", "epoch!==a.epoch", "pending"]
   },
   {
     name: "control-phi-wallet-contract",
