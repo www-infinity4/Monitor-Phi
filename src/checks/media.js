@@ -1,5 +1,5 @@
 const SURFACES = [
-  ["QuantaPhi/media-repair.js", ["QuantaMediaRepair","qImagesBtn","qVideoBtn","qSoundBtn","quanta-overview-first-v1"]],
+  ["QuantaPhi/media-repair.js", ["QuantaMediaRepair","qImagesBtn","qVideoBtn","qSoundBtn","quanta-overview-first-v2"]],
   ["QuantaPhi/", ["quantaAiUserId","gpt-overview-writer","id=\"overview\""]],
   ["Omni-Phi/images/", ["image-search-v4.js"]],
   ["Omni-Phi/video/", ["assets/app.js"]],
@@ -7,6 +7,7 @@ const SURFACES = [
   ["C13b0/phi/images/", ["Infinity"]],
   ["C13b0/phi/video/", ["Infinity"]],
   ["C13b0/phi/sound/", ["Infinity"]],
+  ["News-Phi/monitor-refresh-loop.js", ["NewsPhiDirect","categories:'news'","time_range:'week'","newsphi:monitor-feed"]],
   ["https://infinity-rogers.marvaseater.workers.dev/health", ["infinity-ai-gateway","\"openaiConfigured\":true","\"workersAIConfigured\":true"]]
 ];
 
