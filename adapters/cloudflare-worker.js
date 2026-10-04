@@ -22,7 +22,7 @@ async function getRuntime(env = {}) {
   }
   const endpoint = env.SEARXNG_URL || "https://orange-brook-a2ac.marvaseater.workers.dev";
   const news = {
-    provider: createSearxngNewsProvider({ endpoint })
+    provider: createSearxngNewsProvider({ endpoint, fetchImpl: env.NEWS_SEARCH ? (input, init) => env.NEWS_SEARCH.fetch(new Request(input, init)) : fetch })
   };
 
   const flow = env.MONITOR_DB ? { store: createD1FlowStore(env.MONITOR_DB) } : null;

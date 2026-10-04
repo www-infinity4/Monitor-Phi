@@ -22,10 +22,10 @@ export function createSearxngNewsProvider({endpoint,fetchImpl=fetch,perSeed=8,ti
           return (data.results||[]).flatMap(item=>{const at=newsPublication(item,now),url=clean(item.url);if(!at||now-at>7*86400000||!/^https?:\/\//i.test(url))return [];return [{title:clean(item.title),url,excerpt:clean(item.content||item.snippet),image:clean(item.img_src||item.thumbnail),source:clean(item.source||new URL(url).hostname),publishedAt:new Date(at).toISOString(),topic:seed.topic}]});
         }finally{clearTimeout(timer)}
       }));
-      if(result.every(x=>x.status==='rejected'))throw Error('News retrieval failed');
+      if(result.every(x=>x.status==='rejected'))throw Error('News retrieval failed: '+result.map(x=>String(x.reason?.message||x.reason)).join('; '));
       const seen=new Set();return result.filter(x=>x.status==='fulfilled').flatMap(x=>x.value).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).filter(x=>!seen.has(x.url)&&seen.add(x.url)).slice(0,perSeed);
     }));
-    if(batches.length&&batches.every(x=>x.status==='rejected'))throw Error('News provider unavailable');
+    if(batches.length&&batches.every(x=>x.status==='rejected'))throw Error('News provider unavailable: '+batches.map(x=>String(x.reason?.message||x.reason)).join('; '));
     const seen=new Set();return batches.filter(x=>x.status==='fulfilled').flatMap(x=>x.value).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).filter(x=>!seen.has(x.url)&&seen.add(x.url));
   };
 }

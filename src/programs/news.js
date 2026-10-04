@@ -47,7 +47,9 @@ export function createNewsProgram({ provider, maxSeeds = 24 } = {}) {
         });
       }
 
-      const raw = await provider({ seeds: rankedSeeds, request, context });
+      let raw;
+      try { raw = await provider({ seeds: rankedSeeds, request, context }); }
+      catch (error) { return json({status:'unavailable',stories:[],seeds:rankedSeeds,error:String(error?.message||error),generatedAt:new Date().toISOString()},503); }
       const stories = normalizeStories(raw, rankedSeeds);
       return json({
         status: "fresh",
