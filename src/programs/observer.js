@@ -1,4 +1,5 @@
 import { json } from "../monitor.js";
+import { INFINITY_RECOVERY } from '../checks/infinity-recovery.js';
 
 export function createObserverProgram({ checks = [] } = {}) {
   return {
@@ -12,12 +13,13 @@ export function createObserverProgram({ checks = [] } = {}) {
 
     async handle(request, context) {
       if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405);
+      if (context.route === '/recovery') return json({ok:true,mode:'observe-only',recoveries:[INFINITY_RECOVERY]});
       if (context.route !== "/" && context.route !== "/run") {
         return json({ error: "observer_route_not_found" }, 404);
       }
 
       const results = [];
-      for (const check of checks) {
+      await Promise.all(checks.map(async check => {
         const started = Date.now();
         try {
           const result = await check.run(context);
@@ -35,10 +37,12 @@ export function createObserverProgram({ checks = [] } = {}) {
             error: String(error?.message || error)
           });
         }
-      }
+      }));
       return json({
-        ok: results.every(x => x.ok),
+        ok: checks.length > 0 && results.every(x => x.ok),
+        configured: checks.length > 0,
         mode: "observe-only",
+        recovery: INFINITY_RECOVERY,
         results
       });
     }

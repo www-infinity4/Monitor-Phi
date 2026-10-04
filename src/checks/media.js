@@ -7,7 +7,7 @@ const SURFACES = [
   ["C13b0/phi/images/", ["Infinity"]],
   ["C13b0/phi/video/", ["Infinity"]],
   ["C13b0/phi/sound/", ["Infinity"]],
-  ["News-Phi/monitor-refresh-loop.js", ["NewsPhiDirect","categories:'news'","time_range:'week'","newsphi:monitor-feed"]],
+  ["News-Phi/monitor-refresh-loop.js", ["NewsPhiDirect","categories:'news'","windowDays:7","newsphi:monitor-feed"]],
   ["https://infinity-rogers.marvaseater.workers.dev/health", ["infinity-ai-gateway","\"openaiConfigured\":true","\"workersAIConfigured\":true"]]
 ];
 
