@@ -1,0 +1,13 @@
+# Code Phi and fresh news verification
+
+Code Phi ignored the `path=Education` choice and rendered a generic story page before obtaining an unused capability plan. The education path now asks the existing AI gateway for a structured curriculum and renders validated source references into lessons, examples, comparisons, activities and knowledge checks. It keeps the original token and selected media. A source-guided draft remains usable when AI is unavailable. Human review is explicitly pending. The deployment package contains linked `learn/<lesson>/index.html` files; packaging alone is not publication.
+
+At 412×915, the live Shop LC build returned five AI lessons, 16 linked sources, five activities, five knowledge checks and six HTML files. The page and builder controls had no horizontal overflow. Selected-image deduplication was corrected so an image cannot disappear just because its source is also a collected card.
+
+News Phi's refresh button had no click handler. Retrieval also expanded to month/year results to fill a batch, and ordering favored relevance boosts over publication time. Refresh now retrieves news-category results from day/week windows, validates dates, sorts new reporting by publication time, and requests further pages rather than older windows. Up to 20 genuinely new cards are added when available. Saved reporting is retained until the chosen reset policy; older unread stories are interleaved after each three new stories. Dismissals record topic feedback. Shared-story links remain accessible.
+
+The live browser retrieved 15 recent reports for one test interest. All were dated within seven days; the first reports were minutes old. Refresh, story opening, dismissal and 412px layout passed. No results were invented to force a batch of 20.
+
+The Monitor worker's public subrequests to the search worker returned 404. Its `NEWS_SEARCH` service binding now routes to the existing `orange-brook-a2ac` worker directly. D1 bindings and stored Quant records are preserved. `/p/news/feed` returned 200 and eight dated current stories for the test interest. Retrieval failures return an explicit unavailable response instead of a generic 500.
+
+The live observer has five deployment checks covering wallet caching, shared-counter caching, the repair asset version, the education builder and recent-news retrieval. All five passed. `/p/observer/recovery` holds the working Infinity commit, recovery steps, test evidence, preservation requirements and limitations. Static markers do not prove responsiveness on every device, and the observer remains read-only.
