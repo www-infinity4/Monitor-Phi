@@ -19,7 +19,7 @@ export function createSearxngNewsProvider({endpoint,fetchImpl=fetch,perSeed=8,ti
           const response=await fetchImpl(`${base}/search?${params}`,{cache:'no-store',signal:ctl.signal,headers:{accept:'application/json','cache-control':'no-cache'}});
           if(!response.ok)throw Error('News provider '+response.status);
           const data=await response.json();
-          return (data.results||[]).flatMap(item=>{const at=newsPublication(item,now),url=clean(item.url);if(!at||now-at>7*86400000||!/^https?:\/\//i.test(url))return [];return [{title:clean(item.title),url,excerpt:clean(item.content||item.snippet),image:clean(item.img_src||item.thumbnail),source:clean(item.source||new URL(url).hostname),publishedAt:new Date(at).toISOString(),topic:seed.topic}]});
+          return (data.results||[]).flatMap(item=>{const at=newsPublication(item,now),url=clean(item.url);if((at&&now-at>7*86400000)||!/^https?:\/\//i.test(url))return [];return [{title:clean(item.title),url,excerpt:clean(item.content||item.snippet),image:clean(item.img_src||item.thumbnail),source:clean(item.source||new URL(url).hostname),publishedAt:at?new Date(at).toISOString():'',retrievedAt:new Date(now).toISOString(),publicationVerified:Boolean(at),topic:seed.topic}]});
         }finally{clearTimeout(timer)}
       }));
       if(result.every(x=>x.status==='rejected'))throw Error('News retrieval failed: '+result.map(x=>String(x.reason?.message||x.reason)).join('; '));
