@@ -11,7 +11,7 @@ export const INFINITY_RECOVERY = Object.freeze({
   limitations: 'Static deployment checks detect missing safeguards. They do not prove responsiveness on every device or restore code automatically.'
 });
 const BASE='https://quantaphi.org/infinity-phi/';
-export function createInfinityRecoveryChecks({fetchImpl=globalThis.fetch,timeoutMs=8000}={}) {
+export function createInfinityRecoveryChecks({fetchImpl=globalThis.fetch,timeoutMs=8000,includePreflights=false}={}) {
   const sourceChecks=[
     ['infinity-saved-ledger-cache','wallet-runtime.js',['cachedCountInputs','cachedLedgerRaw','inputs.every','canonicalSearchCounts']],
     ['infinity-token-ledger-cache','unified-token-count.js',['cachedLedgerRaw','raw===cachedLedgerRaw','reconcile']],
@@ -37,5 +37,7 @@ export function createInfinityRecoveryChecks({fetchImpl=globalThis.fetch,timeout
     const results=await Promise.all(assets.map(async asset=>{try{const r=await fetchImpl(asset,{cache:'no-store',signal:AbortSignal.timeout(timeoutMs)});return {url:asset,ok:r.ok&&/javascript/.test(r.headers.get('Content-Type')||''),status:r.status}}catch(error){return {url:asset,ok:false,error:String(error?.message||error)}}}));
     return {ok:page.ok&&results.length>0&&results.every(x=>x.ok),url:base,status:page.status,assets:results,limitation:'Checks served scripts and chunk URLs; does not certify device responsiveness.'};
   }}));
-  return [...sourceChecks,...preflights,...pages];
+  // Workers.dev OPTIONS subrequests return platform 404s from this Worker.
+  // Run preflights from a browser/external runner; do not label that limitation an app outage.
+  return [...sourceChecks,...(includePreflights?preflights:[]),...pages];
 }
