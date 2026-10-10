@@ -1,0 +1,7 @@
+# Infinity suite observer
+
+Runs every 15 minutes in Cloudflare. The site inventory combines the current Control Phi registry and the canonical Phi suite paths. D1 `infinity-suite-observer` holds `observer_runs`, `repair_tickets` and a scan lease. Failed checks create or reopen one ticket per check; successful checks mark its ticket recovered. Status: https://infinity-suite-observer.marvaseater.workers.dev/status .
+
+Checks include HTTP status/readable source and the published shared wallet, Quanta wallet, story/image surfaces, ShopLC durable reward retries, and the actual StarQuest health policy through its service binding. ShopLC pays 5 full coins, maximum 3 eligible distinct items per account per America/Chicago day, once per item. Browser tests live in Control-Phi's Oracle channel workflow. Static markers and page responses do not certify payout delivery to a particular signed-in account, complete playback, or visual quality. The observer does not mint, debit, reset wallets, or automatically deploy repairs.
+
+The POST /run endpoint requires the private RUN_TOKEN binding. No account identities, device tokens or user balances are collected in reports. Preserve the DB, STARQUEST service binding and RUN_TOKEN when deploying; never publish RUN_TOKEN in repository files. Durable repair tickets are available to future authorized repair adapters; their presence does not claim a completed fix.
