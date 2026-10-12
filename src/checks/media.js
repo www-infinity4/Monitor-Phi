@@ -7,8 +7,8 @@ const SURFACES = [
   ["C13b0/phi/images/", ["Infinity"]],
   ["C13b0/phi/video/", ["Infinity"]],
   ["C13b0/phi/sound/", ["Infinity"]],
-  ["News-Phi/monitor-refresh-loop.js", ["NewsPhiDirect","categories:'news'","windowDays:7","newsphi:monitor-feed"]],
-  ["https://infinity-rogers.marvaseater.workers.dev/health", ["infinity-ai-gateway","\"openaiConfigured\":true","\"workersAIConfigured\":true"]]
+  ["News-Phi/monitor-refresh-loop.js", ["NewsPhiDirect","categories:'news'","ARTICLE_MAX_AGE=48*60*60*1000","publicationVerified","newsphi:monitor-feed"]],
+  ["https://infinity-rogers.marvaseater.workers.dev/health", ["infinity-ai-gateway","\"workersAIConfigured\":true","\"/v1/chat\""]]
 ];
 
 export function createMediaChecks({ fetchImpl = globalThis.fetch, base = "https://www-infinity4.github.io/", timeoutMs = 8000 } = {}) {
