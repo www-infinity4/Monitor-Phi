@@ -1,7 +1,12 @@
 const clean=value=>String(value??'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
 export function newsPublication(item,now=Date.now()){
-  const date=Date.parse(item.publishedDate||item.published_at||item.pubDate||item.date||'');
-  if(Number.isFinite(date)&&date<=now)return date;
+  const explicit=item.publishedDate||item.published_at||item.pubDate||item.date||'';
+  if(explicit){
+    const date=Date.parse(explicit);
+    // An explicitly invalid or future publication stamp cannot be rescued
+    // by a contradictory, unverified relative metadata field.
+    return Number.isFinite(date)&&date<=now?date:0;
+  }
   const relative=clean(item.metadata).match(/(\d+)\s+(minute|hour|day|week)s?\s+ago/i);
   if(relative)return now-Number(relative[1])*{minute:60000,hour:3600000,day:86400000,week:604800000}[relative[2].toLowerCase()];
   if(/just now/i.test(clean(item.metadata)))return now;
