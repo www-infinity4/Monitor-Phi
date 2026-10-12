@@ -1,0 +1,39 @@
+name: Monitor Phi Oracle cross-site contract audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '29 6 * * *'
+  push:
+    branches: [main]
+    paths: ['src/checks/oracle-system.js','scripts/check-oracle-system.js','test/oracle-system.test.js','.github/workflows/oracle-system-watch.yml']
+  pull_request:
+    paths: ['src/checks/oracle-system.js','scripts/check-oracle-system.js','test/oracle-system.test.js','.github/workflows/oracle-system-watch.yml']
+permissions:
+  contents: read
+  issues: write
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify detached, read-only monitoring logic
+        run: |
+          node --check scripts/check-oracle-system.js
+          node --test test/oracle-system.test.js
+      - name: Check deployed reader, Purple, Radio and Omni contracts
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORACLE_OPEN_ISSUES: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: node scripts/check-oracle-system.js
+      - name: Preserve Monitor Phi evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-phi-oracle-system
+          path: monitor-receipts/
+          retention-days: 14
