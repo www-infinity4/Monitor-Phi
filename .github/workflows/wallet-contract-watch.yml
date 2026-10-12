@@ -5,6 +5,8 @@ on:
     branches: ["main"]
     paths:
       - "src/checks/wallet-contracts.js"
+      - "src/checks/media.js"
+      - "test/current-media-contract.test.js"
       - "scripts/check-wallet-contracts.js"
       - ".github/workflows/wallet-contract-watch.yml"
   schedule:
@@ -22,5 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Verify semantic media and wallet observer rules
+        run: node --test test/current-media-contract.test.js test/wallet-contracts.test.js
       - name: Observe published wallet contracts
         run: node scripts/check-wallet-contracts.js
