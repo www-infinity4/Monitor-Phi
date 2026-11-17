@@ -19,3 +19,25 @@ test('unauthenticated Music Quant endpoint must reject guest; never attaches a w
  const [broken]=createOracleSystemChecks({surfaces:[{name:'ledger',repository:'test',url:'https://example.test/state',authorizationRequired:true}],fetchImpl:async()=>new Response('OK',{status:200})});
  assert.equal((await broken.run()).reason,'authorization_bypass_possible');
 });
+
+test('Radio audit recognizes verified reconciliation and requires its confirmation event', async () => {
+  const radio = ORACLE_SURFACES.find(surface => surface.name === 'radio-unified-bridge');
+  const deployedMarkers = [
+    'musicquant:cloud-synced',
+    'lastReconciled',
+    'receiptCheckpoint',
+    'musicquant:wallet-confirmed',
+  ];
+  const run = markers => {
+    const [check] = createOracleSystemChecks({
+      surfaces: [radio],
+      fetchImpl: async () => new Response(markers.join('\n'), { status: 200 }),
+    });
+    return check.run();
+  };
+
+  assert.equal((await run(deployedMarkers)).ok, true);
+  const incomplete = await run(deployedMarkers.slice(0, -1));
+  assert.equal(incomplete.ok, false);
+  assert.deepEqual(incomplete.missing, ['musicquant:wallet-confirmed']);
+});
