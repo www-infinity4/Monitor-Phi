@@ -13,3 +13,27 @@ test('AI health checks Workers AI availability rather than retired OpenAI config
  const blocked=createMediaChecks({fetchImpl:async()=>new Response('{"service":"infinity-ai-gateway","workersAIConfigured":false,"routes":{"/v1/chat":"rogers-workers-ai"}}')}).find(x=>x.name==='media:'+url);
  const r=await blocked.run();assert.equal(r.ok,false);assert.ok(r.missing.includes('"workersAIConfigured":true'));
 });
+
+test('QuantaPhi verifies the canonical media script and its current search contract', async () => {
+  const url = 'https://quantaphi.org/media-repair.js';
+  const [target] = MEDIA_SURFACES.find(([, markers]) => markers.includes('QuantaMediaRepair'));
+  assert.equal(target, url);
+
+  const overviewFirst = 'QuantaMediaRepair qImagesBtn qVideoBtn qSoundBtn quanta-overview-first-v2';
+  const mediaFirst = overviewFirst.replace('quanta-overview-first-v2', 'quanta-intent-first-v3');
+  const run = (body, status) => {
+    const check = createMediaChecks({
+      fetchImpl: async requested => {
+        assert.equal(String(requested), url);
+        return new Response(body, { status });
+      },
+    }).find(({ name }) => name === 'media:' + url);
+    return check.run();
+  };
+
+  assert.equal((await run(mediaFirst, 200)).ok, true);
+  assert.deepEqual((await run(overviewFirst, 200)).missing, ['quanta-intent-first-v3']);
+  const unavailable = await run(mediaFirst, 404);
+  assert.equal(unavailable.ok, false);
+  assert.equal(unavailable.status, 404);
+});
