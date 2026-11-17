@@ -9,6 +9,11 @@ on:
       - "test/current-media-contract.test.js"
       - "scripts/check-wallet-contracts.js"
       - ".github/workflows/wallet-contract-watch.yml"
+  pull_request:
+    paths:
+      - "src/checks/media.js"
+      - "test/current-media-contract.test.js"
+      - ".github/workflows/wallet-contract-watch.yml"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
