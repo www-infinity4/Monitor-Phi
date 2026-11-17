@@ -13,7 +13,7 @@ export const ORACLE_SURFACES=[
  {name:'radio-music-recovery',repository:'www-infinity4/Alien-Radio',url:'https://www-infinity4.github.io/Alien-Radio/music-quant-cloud.js',
   markers:['fetchCompleteMusicHistory','music_quant_history_incomplete','music_quant_wallet_changed_during_sync','MusicQuantStore.putMany']},
  {name:'radio-unified-bridge',repository:'www-infinity4/Alien-Radio',url:'https://www-infinity4.github.io/Alien-Radio/unified-wallet-bridge.js',
-  markers:['musicquant:cloud-synced','lastReconciled','if(connected&&wallet)await mintChanged']},
+  markers:['musicquant:cloud-synced','lastReconciled','receiptCheckpoint','musicquant:wallet-confirmed']},
  {name:'omni-music-recovery',repository:'www-infinity4/Omni-Phi',url:'https://www-infinity4.github.io/Omni-Phi/music-quant-cloud.js',
   markers:['fetchCompleteMusicHistory','music_quant_history_incomplete','music_quant_wallet_changed_during_sync']},
  {name:'quant-state-auth-guard',repository:'www-infinity4/QuantaPhi',url:'https://quanta-phi-ledger.marvaseater.workers.dev/v1/music-quants/state',authorizationRequired:true}
