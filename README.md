@@ -88,6 +88,21 @@ Monitor Phi should be observable, reproducible and portable. A replacement for v
 
 Architecture repository. Cloudflare remains required wherever an existing Infinity application still depends on Cloudflare services until the corresponding Monitor Phi component has been implemented, tested and migrated.
 
+### Database allowance recovery — November 22, 2026
+
+Continues [issue #8](https://github.com/www-infinity4/Monitor-Phi/issues/8) and
+[QuantaPhi #1110](https://github.com/www-infinity4/QuantaPhi/issues/1110).
+Health, program discovery, Observer and flow routes do not hydrate the complete
+Quant graph. Supported graph routes initialize it once per runtime, sharing
+concurrent work. Failed hydration returns 503 and pauses retries for 60 seconds;
+unloaded counts are `null`, never an invented empty graph. Stored exports,
+sealed records, wallet data and production bindings are preserved.
+
+Five initial regressions and four route-validation regressions failed before
+repair; the complete local Node suite passes 29 tests. Exact-head CI,
+deployment and live verification must be recorded separately. The repair does
+not reset an already exhausted provider allowance or change account billing.
+
 
 ## Implemented foundation
 
